@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/cart/cart_bloc.dart';
+import '../bloc/cart/cart_state.dart';
+
 import 'cart_screen.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
@@ -16,39 +20,23 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
-  // Giỏ hàng dùng chung giữa các màn hình
-  final List<CartItem> _sharedCart = [];
-
-  int get _totalCartCount {
-    return _sharedCart.fold(0, (sum, item) => sum + item.quantity);
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     // Danh sách các màn hình tương ứng với từng Tab
     final screens = [
-      HomeScreen(
-        cartItems: _sharedCart,
-        themeNotifier: widget.themeNotifier,
-      ),
+      HomeScreen(themeNotifier: widget.themeNotifier),
       CartScreen(
-        cartItems: _sharedCart,
         onBrowseFoods: () {
           setState(() => _currentIndex = 0);
         },
       ),
-      ProfileScreen(
-        themeNotifier: widget.themeNotifier,
-      ),
+      ProfileScreen(themeNotifier: widget.themeNotifier),
     ];
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: screens),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
@@ -74,15 +62,23 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               label: 'Trang chủ',
             ),
             NavigationDestination(
-              icon: Badge(
-                isLabelVisible: _totalCartCount > 0,
-                label: Text('$_totalCartCount'),
-                child: const Icon(Icons.shopping_bag_outlined),
+              icon: BlocBuilder<CartBloc, CartState>(
+                builder: (context, state) {
+                  return Badge(
+                    isLabelVisible: state.totalCount > 0,
+                    label: Text('${state.totalCount}'),
+                    child: const Icon(Icons.shopping_bag_outlined),
+                  );
+                },
               ),
-              selectedIcon: Badge(
-                isLabelVisible: _totalCartCount > 0,
-                label: Text('$_totalCartCount'),
-                child: const Icon(Icons.shopping_bag),
+              selectedIcon: BlocBuilder<CartBloc, CartState>(
+                builder: (context, state) {
+                  return Badge(
+                    isLabelVisible: state.totalCount > 0,
+                    label: Text('${state.totalCount}'),
+                    child: const Icon(Icons.shopping_bag),
+                  );
+                },
               ),
               label: 'Giỏ hàng',
             ),

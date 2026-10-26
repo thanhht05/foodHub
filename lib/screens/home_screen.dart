@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
+
 import '../data/mock_data.dart';
 import '../models/food_item.dart';
 import '../widgets/category_chip.dart';
 import '../widgets/food_card.dart';
-import 'cart_screen.dart';
 import 'detail_screen.dart';
 
 /// Màn hình Trang Chủ (Home Screen)
 class HomeScreen extends StatefulWidget {
-  final List<CartItem> cartItems;
   final ValueNotifier<ThemeMode> themeNotifier;
 
   const HomeScreen({
     super.key,
-    required this.cartItems,
     required this.themeNotifier,
   });
 
@@ -45,9 +43,11 @@ class _HomeScreenState extends State<HomeScreen> {
   List<FoodItem> get _filteredFoods {
     return _foods.where((food) {
       final matchesCategory =
-          _selectedCategoryId == 'all' || food.categoryId == _selectedCategoryId;
-      final matchesSearch =
-          food.name.toLowerCase().contains(_searchQuery.toLowerCase());
+          _selectedCategoryId == 'all' ||
+          food.categoryId == _selectedCategoryId;
+      final matchesSearch = food.name.toLowerCase().contains(
+        _searchQuery.toLowerCase(),
+      );
       return matchesCategory && matchesSearch;
     }).toList();
   }
@@ -55,18 +55,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void _toggleFavorite(FoodItem food) {
     setState(() {
       food.isFavorite = !food.isFavorite;
-    });
-  }
-
-  void _addToCart(FoodItem food, int quantity) {
-    setState(() {
-      final existingIndex =
-          widget.cartItems.indexWhere((item) => item.food.id == food.id);
-      if (existingIndex >= 0) {
-        widget.cartItems[existingIndex].quantity += quantity;
-      } else {
-        widget.cartItems.add(CartItem(food: food, quantity: quantity));
-      }
     });
   }
 
@@ -91,27 +79,40 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.location_on, size: 16, color: theme.colorScheme.primary),
+                            Icon(
+                              Icons.location_on,
+                              size: 16,
+                              color: theme.colorScheme.primary,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               'Giao hàng tới',
-                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 2),
                         const Text(
                           'Quận 1, TP. Hồ Chí Minh ▾',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
                         ),
                       ],
                     ),
                     IconButton(
-                      icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode_outlined),
+                      icon: Icon(
+                        isDark ? Icons.light_mode : Icons.dark_mode_outlined,
+                      ),
                       tooltip: 'Đổi chế độ sáng / tối',
                       onPressed: () {
-                        widget.themeNotifier.value =
-                            isDark ? ThemeMode.light : ThemeMode.dark;
+                        widget.themeNotifier.value = isDark
+                            ? ThemeMode.light
+                            : ThemeMode.dark;
                       },
                     ),
                   ],
@@ -138,7 +139,10 @@ class _HomeScreenState extends State<HomeScreen> {
             // Thanh tìm kiếm (Search Box)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 child: TextField(
                   controller: _searchController,
                   onChanged: (value) {
@@ -194,11 +198,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     const Text(
                       'Món ăn phổ biến',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Text(
                       '${_filteredFoods.length} món',
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 13,
+                      ),
                     ),
                   ],
                 ),
@@ -213,16 +223,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Center(
                     child: Column(
                       children: [
-                        Icon(Icons.search_off, size: 64, color: Colors.grey.shade400),
+                        Icon(
+                          Icons.search_off,
+                          size: 64,
+                          color: Colors.grey.shade400,
+                        ),
                         const SizedBox(height: 12),
                         const Text(
                           'Không tìm thấy món ăn phù hợp',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Hãy thử tìm bằng từ khoá khác xem sao!',
-                          style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 13,
+                          ),
                         ),
                       ],
                     ),
@@ -231,7 +251,10 @@ class _HomeScreenState extends State<HomeScreen> {
               )
             else
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 8,
+                ),
                 sliver: SliverGrid(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
@@ -239,39 +262,33 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisSpacing: 16,
                     childAspectRatio: 0.72,
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final food = _filteredFoods[index];
-                      return FoodCard(
-                        food: food,
-                        onTap: () {
-                          // Điều hướng sang màn hình Chi Tiết bằng Navigator.push
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => FoodDetailScreen(
-                                food: food,
-                                onToggleFavorite: () => _toggleFavorite(food),
-                                onAddToCart: _addToCart,
-                              ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final food = _filteredFoods[index];
+                    return FoodCard(
+                      food: food,
+                      onTap: () {
+                        // Điều hướng sang màn hình Chi Tiết bằng Navigator.push
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FoodDetailScreen(
+                              food: food,
+                              onToggleFavorite: () => _toggleFavorite(food),
                             ),
-                          ).then((_) {
-                            // Cập nhật lại UI khi quay về màn hình Home
-                            setState(() {});
-                          });
-                        },
-                        onToggleFavorite: () => _toggleFavorite(food),
-                      );
-                    },
-                    childCount: _filteredFoods.length,
-                  ),
+                          ),
+                        ).then((_) {
+                          // Cập nhật lại UI khi quay về màn hình Home
+                          setState(() {});
+                        });
+                      },
+                      onToggleFavorite: () => _toggleFavorite(food),
+                    );
+                  }, childCount: _filteredFoods.length),
                 ),
               ),
 
             // Khoảng đệm đáy màn hình
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 30),
-            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 30)),
           ],
         ),
       ),

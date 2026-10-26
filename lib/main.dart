@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:my_first_app/bloc/cart/cart_bloc.dart';
+
 import 'screens/login_screen.dart';
 import 'theme/app_theme.dart';
 
@@ -17,8 +20,9 @@ class FoodHubApp extends StatefulWidget {
 
 class _FoodHubAppState extends State<FoodHubApp> {
   // ValueNotifier dùng để lắng nghe và chuyển đổi ThemeMode (Sáng / Tối) tức thì
-  final ValueNotifier<ThemeMode> _themeNotifier =
-      ValueNotifier<ThemeMode>(ThemeMode.light);
+  final ValueNotifier<ThemeMode> _themeNotifier = ValueNotifier<ThemeMode>(
+    ThemeMode.light,
+  );
 
   @override
   void dispose() {
@@ -28,20 +32,23 @@ class _FoodHubAppState extends State<FoodHubApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ThemeMode>(
-      valueListenable: _themeNotifier,
-      builder: (context, currentMode, child) {
-        return MaterialApp(
-          title: 'FoodHub',
-          debugShowCheckedModeBanner: false,
-          // Áp dụng chủ đề giao diện Sáng / Tối
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: currentMode,
-          // Màn hình khởi chạy đầu tiên là Đăng nhập
-          home: LoginScreen(themeNotifier: _themeNotifier),
-        );
-      },
+    return BlocProvider(
+      create: (context) => CartBloc(), // init bloc
+      child: ValueListenableBuilder<ThemeMode>(
+        valueListenable: _themeNotifier,
+        builder: (context, currentMode, child) {
+          return MaterialApp(
+            title: 'FoodHub',
+            debugShowCheckedModeBanner: false,
+            // Áp dụng chủ đề giao diện Sáng / Tối
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: currentMode,
+            // Màn hình khởi chạy đầu tiên là Đăng nhập
+            home: LoginScreen(themeNotifier: _themeNotifier),
+          );
+        },
+      ),
     );
   }
 }

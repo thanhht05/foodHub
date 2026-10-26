@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:my_first_app/bloc/cart/cart_bloc.dart';
+import 'package:my_first_app/bloc/cart/cart_event.dart';
+
 import '../models/food_item.dart';
 import '../widgets/custom_button.dart';
 
@@ -6,13 +10,13 @@ import '../widgets/custom_button.dart';
 class FoodDetailScreen extends StatefulWidget {
   final FoodItem food;
   final VoidCallback onToggleFavorite;
-  final Function(FoodItem food, int quantity) onAddToCart;
+  final Function(FoodItem food, int quantity)? onAddToCart;
 
   const FoodDetailScreen({
     super.key,
     required this.food,
     required this.onToggleFavorite,
-    required this.onAddToCart,
+    this.onAddToCart,
   });
 
   @override
@@ -66,7 +70,11 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
                             color: Colors.grey.shade300,
-                            child: const Icon(Icons.fastfood, size: 60, color: Colors.grey),
+                            child: const Icon(
+                              Icons.fastfood,
+                              size: 60,
+                              color: Colors.grey,
+                            ),
                           );
                         },
                       ),
@@ -78,7 +86,10 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                       child: CircleAvatar(
                         backgroundColor: Colors.white.withValues(alpha: 0.9),
                         child: IconButton(
-                          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.black87,
+                          ),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ),
@@ -91,8 +102,12 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                         backgroundColor: Colors.white.withValues(alpha: 0.9),
                         child: IconButton(
                           icon: Icon(
-                            food.isFavorite ? Icons.favorite : Icons.favorite_border,
-                            color: food.isFavorite ? Colors.redAccent : Colors.grey,
+                            food.isFavorite
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: food.isFavorite
+                                ? Colors.redAccent
+                                : Colors.grey,
                           ),
                           onPressed: () {
                             setState(() {
@@ -141,20 +156,40 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
 
                       // Chỉ số: Đánh giá, Thời gian, Lượng Calo
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surface,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.withValues(alpha: 0.12)),
+                          border: Border.all(
+                            color: Colors.grey.withValues(alpha: 0.12),
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            _buildInfoBadge(Icons.star, '${food.rating}', 'Đánh giá', Colors.amber),
+                            _buildInfoBadge(
+                              Icons.star,
+                              '${food.rating}',
+                              'Đánh giá',
+                              Colors.amber,
+                            ),
                             _buildVerticalDivider(),
-                            _buildInfoBadge(Icons.access_time, food.deliveryTime, 'Giao hàng', Colors.blue),
+                            _buildInfoBadge(
+                              Icons.access_time,
+                              food.deliveryTime,
+                              'Giao hàng',
+                              Colors.blue,
+                            ),
                             _buildVerticalDivider(),
-                            _buildInfoBadge(Icons.local_fire_department, '${food.calories} Kcal', 'Năng lượng', Colors.orange),
+                            _buildInfoBadge(
+                              Icons.local_fire_department,
+                              '${food.calories} Kcal',
+                              'Năng lượng',
+                              Colors.orange,
+                            ),
                           ],
                         ),
                       ),
@@ -166,13 +201,18 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                         children: [
                           const Text(
                             'Số lượng:',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           Container(
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surface,
                               borderRadius: BorderRadius.circular(30),
-                              border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+                              border: Border.all(
+                                color: Colors.grey.withValues(alpha: 0.2),
+                              ),
                             ),
                             child: Row(
                               children: [
@@ -181,7 +221,9 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                   icon: const Icon(Icons.remove, size: 18),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
                                   child: Text(
                                     '$_quantity',
                                     style: const TextStyle(
@@ -204,7 +246,10 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                       // Mô tả món ăn
                       const Text(
                         'Mô tả món ăn',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -266,11 +311,17 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                         text: 'Thêm vào giỏ',
                         icon: Icons.shopping_bag_outlined,
                         onPressed: () {
-                          widget.onAddToCart(food, _quantity);
+                          // 👈 Bắn Event AddToCartEvent vào CartBloc:
+                          context.read<CartBloc>().add(
+                            AddToCartEvent(food: food, quantity: _quantity),
+                          );
+                          widget.onAddToCart?.call(food, _quantity);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               backgroundColor: Colors.green.shade700,
-                              content: Text('Đã thêm $_quantity x "${food.name}" vào giỏ!'),
+                              content: Text(
+                                'Đã thêm $_quantity x "${food.name}" vào giỏ!',
+                              ),
                               action: SnackBarAction(
                                 label: 'Đóng',
                                 textColor: Colors.white,
@@ -291,7 +342,12 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
     );
   }
 
-  Widget _buildInfoBadge(IconData icon, String value, String label, Color iconColor) {
+  Widget _buildInfoBadge(
+    IconData icon,
+    String value,
+    String label,
+    Color iconColor,
+  ) {
     return Column(
       children: [
         Icon(icon, size: 20, color: iconColor),
