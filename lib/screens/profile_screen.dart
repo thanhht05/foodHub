@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:my_first_app/bloc/auth/auth_bloc.dart';
+import 'package:my_first_app/bloc/auth/auth_event.dart';
+import 'package:my_first_app/bloc/auth/auth_state.dart';
+
 import 'login_screen.dart';
 
 /// Màn hình Tài khoản & Cài đặt (Profile Screen)
@@ -11,6 +16,14 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = themeNotifier.value == ThemeMode.dark;
+
+    final authState = context.watch<AuthBloc>().state;
+    final username = authState is AuthAuthenticated
+        ? authState.user.fullName
+        : "Gues";
+    final email = authState is AuthAuthenticated
+        ? authState.user.email
+        : "chua_dang_nhap@foodhub.com";
 
     return Scaffold(
       appBar: AppBar(
@@ -29,7 +42,9 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 46,
-                        backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                        backgroundColor: theme.colorScheme.primary.withValues(
+                          alpha: 0.2,
+                        ),
                         child: Icon(
                           Icons.person,
                           size: 52,
@@ -42,19 +57,23 @@ class ProfileScreen extends StatelessWidget {
                         child: CircleAvatar(
                           radius: 16,
                           backgroundColor: theme.colorScheme.primary,
-                          child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            size: 16,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Nguyễn Văn A',
+                  Text(
+                    username,
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'demo@foodhub.com',
+                    email,
                     style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                   ),
                 ],
@@ -76,7 +95,9 @@ class ProfileScreen extends StatelessWidget {
                     value: isDark,
                     activeThumbColor: theme.colorScheme.primary,
                     onChanged: (val) {
-                      themeNotifier.value = val ? ThemeMode.dark : ThemeMode.light;
+                      themeNotifier.value = val
+                          ? ThemeMode.dark
+                          : ThemeMode.light;
                     },
                   ),
                 ),
@@ -117,18 +138,14 @@ class ProfileScreen extends StatelessWidget {
                   foregroundColor: Colors.redAccent,
                   side: const BorderSide(color: Colors.redAccent),
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 icon: const Icon(Icons.logout),
                 label: const Text('Đăng Xuất'),
                 onPressed: () {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LoginScreen(themeNotifier: themeNotifier),
-                    ),
-                    (route) => false,
-                  );
+                  context.read<AuthBloc>().add(const LogoutRequestedEvent());
                 },
               ),
             ),
@@ -138,13 +155,20 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingSection({required String title, required List<Widget> children}) {
+  Widget _buildSettingSection({
+    required String title,
+    required List<Widget> children,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey,
+          ),
         ),
         const SizedBox(height: 8),
         Container(

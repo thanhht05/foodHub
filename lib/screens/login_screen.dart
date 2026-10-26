@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:my_first_app/bloc/auth/auth_bloc.dart';
+import 'package:my_first_app/bloc/auth/auth_event.dart';
+import 'package:my_first_app/bloc/auth/auth_state.dart';
+
 import '../widgets/custom_button.dart';
 import 'main_navigation_screen.dart';
 
@@ -22,7 +27,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _isPasswordObscured = true;
   bool _rememberMe = true;
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -38,19 +42,10 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // 2. Giả lập hiệu ứng tải đăng nhập trong 1 giây
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 900));
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    // 3. Chuyển sang màn hình chính bằng Navigator.pushReplacement
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => MainNavigationScreen(
-          themeNotifier: widget.themeNotifier,
-        ),
+    context.read<AuthBloc>().add(
+      LoginSubmittedEvent(
+        email: _emailController.text,
+        password: _passwordController.text,
       ),
     );
   }
@@ -98,10 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     'Khám phá thế giới ẩm thực tươi ngon mỗi ngày',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 36),
 
@@ -174,35 +166,63 @@ class _LoginScreenState extends State<LoginScreen> {
                               setState(() => _rememberMe = val ?? false);
                             },
                           ),
-                          const Text('Ghi nhớ đăng nhập', style: TextStyle(fontSize: 13)),
+                          const Text(
+                            'Ghi nhớ đăng nhập',
+                            style: TextStyle(fontSize: 13),
+                          ),
                         ],
                       ),
                       TextButton(
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Tính năng quên mật khẩu đang phát triển')),
+                            const SnackBar(
+                              content: Text(
+                                'Tính năng quên mật khẩu đang phát triển',
+                              ),
+                            ),
                           );
                         },
-                        child: const Text('Quên mật khẩu?', style: TextStyle(fontSize: 13)),
+                        child: const Text(
+                          'Quên mật khẩu?',
+                          style: TextStyle(fontSize: 13),
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
 
                   // Nút Đăng nhập
-                  CustomButton(
-                    text: 'Đăng Nhập',
-                    icon: Icons.login,
-                    isLoading: _isLoading,
-                    onPressed: _handleLogin,
+                  BlocConsumer<AuthBloc, AuthState>(
+                    listener: (context, state) {
+                      // Nếu đăng nhập thất bại ➔ Báo lỗi màu đỏ:
+                      if (state is AuthFailure) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: Colors.redAccent,
+                            content: Text(state.errorMessage),
+                          ),
+                        );
+                      }
+                    },
+                    builder: (context, state) {
+                      return CustomButton(
+                        text: "Đăng Nhập",
+                        icon: Icons.login,
+                        isLoading: state is AuthLoading,
+                        onPressed: _handleLogin,
+                      );
+                    },
                   ),
+
                   const SizedBox(height: 16),
 
                   // Đăng nhập nhanh chế độ khách
                   OutlinedButton(
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                     onPressed: () {
                       Navigator.pushReplacement(

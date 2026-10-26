@@ -105,3 +105,30 @@ final List<FoodItem> mockFoods = [
   ),
 ];
 
+/// Tài khoản mẫu dùng để kiểm tra đăng nhập (Mock Auth)
+class MockUserAccount {
+  final String email;
+  final String fullName;
+  final String password;
+
+  const MockUserAccount({
+    required this.email,
+    required this.fullName,
+    required this.password,
+  });
+}
+
+final List<MockUserAccount> mockUserAccounts = [
+  const MockUserAccount(
+    email: 'demo@foodhub.com',
+    fullName: 'Nguyễn Văn A',
+    password: 'password123',
+  ),
+  const MockUserAccount(
+    email: 'admin@foodhub.com',
+    fullName: 'Trần Thị B',
+    password: 'admin123',
+  ),
+];
+
+
